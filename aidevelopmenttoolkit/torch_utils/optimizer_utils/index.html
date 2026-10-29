@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>optimizer_utils - AIDevelopmentToolkit</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var properdocs_page_name = "optimizer_utils";
+        var properdocs_page_input_path = "aidevelopmenttoolkit/torch_utils/optimizer_utils.md";
+        var properdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> AIDevelopmentToolkit
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">AIDevelopmentToolkit</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../"></a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >data_utils</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../data_utils/">Index</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../data_utils/metrics/">metrics</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../data_utils/preprocessing/">preprocessing</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../data_utils/pydantic_utils/">pydantic_utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../data_utils/statistics/">statistics</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../general_utils/">general_utils</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >logging_utils</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../logging_utils/">Index</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../logging_utils/boto3_utils/">boto3_utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../logging_utils/file_io/">file_io</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../logging_utils/logger/">logger</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../logging_utils/mlflow_utils/">mlflow_utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../logging_utils/plotly_utils/">plotly_utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../logging_utils/printing_utils/">printing_utils</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >torch_utils</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../">Index</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../AbstractTrainer/">AbstractTrainer</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../AbstractValidator/">AbstractValidator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../EarlyStopper/">EarlyStopper</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../distributed_torch_utils/">distributed_torch_utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../loss_weight_schedulers/">loss_weight_schedulers</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../model_utils/">model_utils</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">optimizer_utils</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#aidevelopmenttoolkit.torch_utils.optimizer_utils.get_optimizer">get_optimizer</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#aidevelopmenttoolkit.torch_utils.optimizer_utils.get_lr_scheduler">get_lr_scheduler</a>
+    </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">AIDevelopmentToolkit</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">AIDevelopmentToolkit</li>
+          <li class="breadcrumb-item">torch_utils</li>
+      <li class="breadcrumb-item active">optimizer_utils</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/DanieleBertagnoli/AIDevelopmentToolkit/edit/master/docs/aidevelopmenttoolkit/torch_utils/optimizer_utils.py">Edit on AIDevelopmentToolkit</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="doc doc-object doc-module">
+
+
+
+<h2 id="aidevelopmenttoolkit.torch_utils.optimizer_utils" class="doc doc-heading">
+            <code>aidevelopmenttoolkit.torch_utils.optimizer_utils</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="aidevelopmenttoolkit.torch_utils.optimizer_utils.get_optimizer" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_optimizer</span><span class="p">(</span><span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optimizer_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optimizer</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns an initialized PyTorch optimizer.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>class_name</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The name of the optimizer class defined in <code>torch.optim</code>,
+e.g. "Adam", "AdamW", or "SGD".</p>
+              </div>
+            </li>
+            <li>
+              <b><code>optimizer_kwargs</code></b>
+                  (<code><span title="Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>The keyword arguments to pass to the optimizer constructor,
+e.g. {"lr": 1e-3, "weight_decay": 1e-4}.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>parameters</code></b>
+                  (<code><span title="collections.abc.Iterable">Iterable</span>[<span title="torch.nn.Parameter">Parameter</span>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>The model parameters to be optimized.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="torch.optim.Optimizer">Optimizer</span></code>
+              –
+              <div class="doc-md-description">
+                <p>An initialized instance of the specified PyTorch optimizer.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>aidevelopmenttoolkit/torch_utils/optimizer_utils.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_optimizer</span><span class="p">(</span>
+        <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">optimizer_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">parameters</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optimizer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Returns an initialized PyTorch optimizer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    class_name : str</span>
+<span class="sd">        The name of the optimizer class defined in `torch.optim`,</span>
+<span class="sd">        e.g. "Adam", "AdamW", or "SGD".</span>
+
+<span class="sd">    optimizer_kwargs : Dict[str, Any]</span>
+<span class="sd">        The keyword arguments to pass to the optimizer constructor,</span>
+<span class="sd">        e.g. {"lr": 1e-3, "weight_decay": 1e-4}.</span>
+
+<span class="sd">    parameters : Iterable[nn.Parameter]</span>
+<span class="sd">        The model parameters to be optimized.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Optimizer</span>
+<span class="sd">        An initialized instance of the specified PyTorch optimizer.</span>
+<span class="sd">    """</span>
+    <span class="n">optimizer_class</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">class_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_class</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">optimizer_class</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Value error: '</span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s2">' is not a valid PyTorch optimizer class."</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">optimizer_class</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="n">optimizer_kwargs</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="aidevelopmenttoolkit.torch_utils.optimizer_utils.get_lr_scheduler" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_lr_scheduler</span><span class="p">(</span><span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scheduler_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LRScheduler</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns an initialized PyTorch learning-rate scheduler.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>class_name</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The name of the scheduler class defined in
+<code>torch.optim.lr_scheduler</code>,
+e.g. "StepLR", "CosineAnnealingLR", or "ExponentialLR".</p>
+              </div>
+            </li>
+            <li>
+              <b><code>scheduler_kwargs</code></b>
+                  (<code><span title="Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>The keyword arguments to pass to the scheduler constructor,
+e.g. {"step_size": 10, "gamma": 0.1}.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>optimizer</code></b>
+                  (<code><span title="torch.optim.Optimizer">Optimizer</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The optimizer whose learning rate will be scheduled.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="torch.optim.lr_scheduler.LRScheduler">LRScheduler</span></code>
+              –
+              <div class="doc-md-description">
+                <p>An initialized instance of the specified PyTorch scheduler.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>aidevelopmenttoolkit/torch_utils/optimizer_utils.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_lr_scheduler</span><span class="p">(</span>
+        <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">scheduler_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LRScheduler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Returns an initialized PyTorch learning-rate scheduler.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    class_name : str</span>
+<span class="sd">        The name of the scheduler class defined in</span>
+<span class="sd">        `torch.optim.lr_scheduler`,</span>
+<span class="sd">        e.g. "StepLR", "CosineAnnealingLR", or "ExponentialLR".</span>
+
+<span class="sd">    scheduler_kwargs : Dict[str, Any]</span>
+<span class="sd">        The keyword arguments to pass to the scheduler constructor,</span>
+<span class="sd">        e.g. {"step_size": 10, "gamma": 0.1}.</span>
+
+<span class="sd">    optimizer : Optimizer</span>
+<span class="sd">        The optimizer whose learning rate will be scheduled.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    LRScheduler</span>
+<span class="sd">        An initialized instance of the specified PyTorch scheduler.</span>
+<span class="sd">    """</span>
+    <span class="n">scheduler_class</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="p">,</span> <span class="n">class_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheduler_class</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">scheduler_class</span><span class="p">,</span> <span class="n">LRScheduler</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Value error: '</span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s2">' is not a valid PyTorch "</span>
+            <span class="s2">"learning-rate scheduler class."</span><span class="p">,</span> <span class="ne">ValueError</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">scheduler_class</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="o">**</span><span class="n">scheduler_kwargs</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../model_utils/" class="btn btn-neutral float-left" title="model_utils"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://properdocs.org/">ProperDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/DanieleBertagnoli/AIDevelopmentToolkit" class="fa fa-code-fork" style="color: #fcfcfc"> AIDevelopmentToolkit</a>
+        </span>
+    
+    
+      <span><a href="../model_utils/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

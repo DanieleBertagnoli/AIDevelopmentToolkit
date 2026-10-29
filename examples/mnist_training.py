@@ -44,16 +44,16 @@ from torchvision.models import resnet50
 from torchvision.datasets import MNIST
 from torchvision import transforms
 
-from aidevelopementtoolkit.general_utils import set_seed, check_shape
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
-from aidevelopementtoolkit.logging_utils.mlflow_utils import start_mlflow_run, log_model_checkpoint, log_run_parameters
-from aidevelopementtoolkit.torch_utils.EarlyStopper import EarlyStopper
-from aidevelopementtoolkit.torch_utils.AbstractTrainer import AbstractTrainer, AbstractTrainingStep
-from aidevelopementtoolkit.torch_utils.AbstractValidator import AbstractValidator, AbstractValidationStep
-from aidevelopementtoolkit.data_utils.metrics import compute_classification_metrics, compute_confusion_matrix
-from aidevelopementtoolkit.logging_utils.plotly_utils import plot_heatmap
-from aidevelopementtoolkit.torch_utils.distributed_torch_utils import dist_barrier, get_process_rank
-from aidevelopementtoolkit.torch_utils.optimizer_utils import get_optimizer, get_lr_scheduler
+from aidevelopmenttoolkit.general_utils import set_seed, check_shape
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.mlflow_utils import start_mlflow_run, log_model_checkpoint, log_run_parameters
+from aidevelopmenttoolkit.torch_utils.EarlyStopper import EarlyStopper
+from aidevelopmenttoolkit.torch_utils.AbstractTrainer import AbstractTrainer, AbstractTrainingStep
+from aidevelopmenttoolkit.torch_utils.AbstractValidator import AbstractValidator, AbstractValidationStep
+from aidevelopmenttoolkit.data_utils.metrics import compute_classification_metrics, compute_confusion_matrix
+from aidevelopmenttoolkit.logging_utils.plotly_utils import plot_heatmap
+from aidevelopmenttoolkit.torch_utils.distributed_torch_utils import dist_barrier, get_process_rank
+from aidevelopmenttoolkit.torch_utils.optimizer_utils import get_optimizer, get_lr_scheduler
 
 
  
@@ -679,7 +679,7 @@ if __name__ == "__main__":
         logger = get_formatted_logger()
         logger.error("The script must be ran using `torchrun` and not `python`", SyntaxError)
 
-    from aidevelopementtoolkit.torch_utils.distributed_torch_utils import run_distributed_function
+    from aidevelopmenttoolkit.torch_utils.distributed_torch_utils import run_distributed_function
 
     # devices = [0, 1, 2, 3] # Supposing 4 GPUs on the current node
     devices = [0] # Supposing single GPU on the current node

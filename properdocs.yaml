@@ -1,16 +1,16 @@
-site_name: AIDevelopementToolkit
+site_name: AIDevelopmentToolkit
 
-site_name: AIDevelopementToolkit
+site_name: AIDevelopmentToolkit
 
-repo_url: https://github.com/DanieleBertagnoli/AIDevelopementToolkit
-repo_name: AIDevelopementToolkit
+repo_url: https://github.com/DanieleBertagnoli/AIDevelopmentToolkit
+repo_name: AIDevelopmentToolkit
 
 theme:
   name: readthedocs
 
 nav:
   - Home: index.md
-  - AIDevelopementToolkit: aidevelopementtoolkit/
+  - AIDevelopmentToolkit: aidevelopmenttoolkit/
 
 plugins:
   - search

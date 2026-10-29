@@ -6,9 +6,9 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import LRScheduler
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
-from aidevelopementtoolkit.torch_utils.EarlyStopper import EarlyStopper
-from aidevelopementtoolkit.torch_utils.AbstractValidator import AbstractValidator
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.torch_utils.EarlyStopper import EarlyStopper
+from aidevelopmenttoolkit.torch_utils.AbstractValidator import AbstractValidator
 
 logger = get_formatted_logger(__name__)
 

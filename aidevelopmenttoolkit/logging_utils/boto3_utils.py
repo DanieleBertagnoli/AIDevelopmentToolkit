@@ -7,7 +7,7 @@ import boto3
 from boto3.s3.transfer import TransferConfig
 from tqdm import tqdm
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 _CHUNK_SIZE = 1024 * 1024 # 1 MB
 

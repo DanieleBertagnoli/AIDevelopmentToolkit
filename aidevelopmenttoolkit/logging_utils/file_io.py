@@ -7,14 +7,14 @@ from botocore.exceptions import ClientError
 import h5py
 from mlflow.entities import Run
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 import numpy as np
 import pandas as pd
 import yaml
 from PIL import Image
 
-from aidevelopementtoolkit.logging_utils.boto3_utils import create_s3_client, read_s3_object, write_s3_object, parse_s3_path
+from aidevelopmenttoolkit.logging_utils.boto3_utils import create_s3_client, read_s3_object, write_s3_object, parse_s3_path
 
 
 _SUPPORTED_EXTENSIONS = {".json", ".yaml", ".yml", ".csv", ".npy", ".npz", ".h5", ".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".webp"}
@@ -173,7 +173,7 @@ def _serialize_data(data: Any, ext: str) -> bytes:
                         compression="gzip",
                     )
                     if is_scalar:
-                        dataset.attrs["_aidevelopementtoolkit_scalar"] = True
+                        dataset.attrs["_aidevelopmenttoolkit_scalar"] = True
         return buffer.getvalue()
 
     data = convert_to_serializable_data(data)
@@ -492,7 +492,7 @@ def load_file(
             def collect_dataset(name, dataset):
                 if isinstance(dataset, h5py.Dataset):
                     array = dataset[()]
-                    if dataset.attrs.get("_aidevelopementtoolkit_scalar", False):
+                    if dataset.attrs.get("_aidevelopmenttoolkit_scalar", False):
                         array = array[0]
                     arrays[name] = np.asarray(array)
 

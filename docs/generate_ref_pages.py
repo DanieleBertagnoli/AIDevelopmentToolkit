@@ -2,7 +2,7 @@ from pathlib import Path
 
 import mkdocs_gen_files
 
-PACKAGE = "aidevelopementtoolkit"
+PACKAGE = "aidevelopmenttoolkit"
 
 nav = mkdocs_gen_files.Nav()
 

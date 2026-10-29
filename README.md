@@ -1,10 +1,10 @@
-# AIDevelopementToolkit
+# AIDevelopmentToolkit
 
 <div align="center">
     <center><img src='assets/logo.png' width="400"></center>
 </div>
 
-AIDevelopementToolkit is a production-ready Python package that provides reusable utilities for AI development workflows.
+AIDevelopmentToolkit is a production-ready Python package that provides reusable utilities for AI development workflows.
 The library is designed to help teams standardize training pipelines, logging, experiment tracking, preprocessing, and PyTorch model management without locking users into a single framework.
 
 ## Scope
@@ -28,23 +28,23 @@ This package is intended for machine learning practitioners and engineering team
 ## Installation
 
 ```sh
-pip install aidevelopementtoolkit
+pip install aidevelopmenttoolkit
 ```
 
 Or install from source:
 
 ```sh
-git clone https://github.com/DanieleBertagnoli/AIDevelopementToolkit.git
-cd AIDevelopementToolkit
+git clone https://github.com/DanieleBertagnoli/AIDevelopmentToolkit.git
+cd AIDevelopmentToolkit
 pip install -e .
 ```
 
 ## What’s Included
 
-- `aidevelopementtoolkit.logging_utils`: colorized console logger, file I/O wrappers, MLflow helpers, and Plotly visualization logging.
-- `aidevelopementtoolkit.data_utils`: sequence-aware preprocessing and classification/clustering metrics.
-- `aidevelopementtoolkit.torch_utils`: PyTorch checkpointing, ONNX export, runtime validation, model summaries, early stopping, and distributed process management.
-- `aidevelopementtoolkit.general_utils`: seed initialization for reproducible experiments.
+- `aidevelopmenttoolkit.logging_utils`: colorized console logger, file I/O wrappers, MLflow helpers, and Plotly visualization logging.
+- `aidevelopmenttoolkit.data_utils`: sequence-aware preprocessing and classification/clustering metrics.
+- `aidevelopmenttoolkit.torch_utils`: PyTorch checkpointing, ONNX export, runtime validation, model summaries, early stopping, and distributed process management.
+- `aidevelopmenttoolkit.general_utils`: seed initialization for reproducible experiments.
 
 ## Usage Guidance
 
@@ -60,7 +60,7 @@ The `examples/run_distributed.sh` script includes launcher commands for:
 
 Complete package documentation is available at:
 
-https://DanieleBertagnoli.github.io/AIDevelopementToolkit/
+https://DanieleBertagnoli.github.io/AIDevelopmentToolkit/
 
 ## Authors
 

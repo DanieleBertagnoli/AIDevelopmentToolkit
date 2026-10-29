@@ -8,8 +8,8 @@ import h5py
 import numpy as np
 import pandas as pd
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
-from aidevelopementtoolkit.logging_utils.file_io import save_file, load_file
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.file_io import save_file, load_file
 
 
 if __name__ == "__main__":

@@ -50,7 +50,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/p/aidevelopementtoolkit
+      url: https://pypi.org/p/aidevelopmenttoolkit
 
     permissions:
       id-token: write

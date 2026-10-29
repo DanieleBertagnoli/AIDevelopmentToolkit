@@ -6,7 +6,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aidevelopementtoolkit"
+name = "aidevelopmenttoolkit"
 version = "1.0.0"
 description = "Utilities for AI development workflows with PyTorch, MLflow and other general purpose functions."
 readme = "README.md"
@@ -37,7 +37,7 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 include = [
-    "aidevelopementtoolkit*"
+    "aidevelopmenttoolkit*"
 ]
 
 [dependency-groups]

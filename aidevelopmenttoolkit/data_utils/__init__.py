@@ -2,7 +2,7 @@
 
 This subpackage contains helpers for data preprocessing, classification and
 clustering metric evaluation, and other data-related utilities used across
-AIDevelopementToolkit.
+AIDevelopmentToolkit.
 
 Modules
 -------

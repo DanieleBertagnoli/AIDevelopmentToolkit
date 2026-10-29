@@ -1,9 +1,9 @@
-# AIDevelopementToolkit
+# AIDevelopmentToolkit
 
-AIDevelopementToolkit provides a production-ready utility suite for AI development workflows.
+AIDevelopmentToolkit provides a production-ready utility suite for AI development workflows.
 The package is designed to help teams standardize logging, experiment tracking, preprocessing, PyTorch model management, ONNX export, and distributed training.
 
-## Why AIDevelopementToolkit?
+## Why AIDevelopmentToolkit?
 
 - Purpose-built for PyTorch-based research and engineering workflows.
 - Shared utilities for logging, MLflow integration, data preparation, and model lifecycle management.
@@ -20,14 +20,14 @@ The package is designed to help teams standardize logging, experiment tracking, 
 ## Installation
 
 ```bash
-pip install aidevelopementtoolkit
+pip install aidevelopmenttoolkit
 ```
 
 Or install from source:
 
 ```bash
-git clone https://github.com/DanieleBertagnoli/AIDevelopementToolkit.git
-cd AIDevelopementToolkit
+git clone https://github.com/DanieleBertagnoli/AIDevelopmentToolkit.git
+cd AIDevelopmentToolkit
 pip install -e .
 ```
 
@@ -43,7 +43,7 @@ This includes `examples/run_distributed.sh`, which shows commands for:
 
 For full API documentation, visit the generated site:
 
-https://DanieleBertagnoli.github.io/AIDevelopementToolkit/
+https://DanieleBertagnoli.github.io/AIDevelopmentToolkit/
 
 ## Getting Started
 

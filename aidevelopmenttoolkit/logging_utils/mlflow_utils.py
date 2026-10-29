@@ -7,9 +7,9 @@ from torch import nn
 from torch.optim import Optimizer
 import mlflow
 
-from aidevelopementtoolkit.logging_utils.file_io import load_file
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
-from aidevelopementtoolkit.torch_utils.model_utils import save_model
+from aidevelopmenttoolkit.logging_utils.file_io import load_file
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.torch_utils.model_utils import save_model
 
 
 def start_mlflow_run(

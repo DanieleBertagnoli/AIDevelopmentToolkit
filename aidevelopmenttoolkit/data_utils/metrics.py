@@ -1,7 +1,7 @@
 from typing import Dict, List, Literal, Optional, Tuple
 
-from aidevelopementtoolkit.general_utils import check_shape
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.general_utils import check_shape
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 import numpy as np
 from scipy.spatial.distance import cdist

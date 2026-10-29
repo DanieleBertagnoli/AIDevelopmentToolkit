@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from math import cos, pi
 from typing import Dict, Any
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 logger = get_formatted_logger(__name__, level="ERROR")
 
@@ -111,7 +111,7 @@ class ConstantScheduler(AbstractScheduler):
         return self.value
 
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 
 class LinearScheduler(AbstractScheduler):

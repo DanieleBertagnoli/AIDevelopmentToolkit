@@ -5,8 +5,8 @@ from unittest.mock import patch
 import torch.nn as nn
 from torchvision.models import resnet18
 
-from aidevelopementtoolkit.logging_utils.mlflow_utils import *
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.mlflow_utils import *
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 if __name__ == "__main__":
     import logging

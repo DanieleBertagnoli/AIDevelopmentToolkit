@@ -6,7 +6,7 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 logger = get_formatted_logger(__name__, level="ERROR")
 

@@ -6,8 +6,8 @@ import numpy as np
 import torch
 from torchvision.models import resnet18
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
-from aidevelopementtoolkit.torch_utils.model_utils import *
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.torch_utils.model_utils import *
 
 if __name__ == "__main__":
 

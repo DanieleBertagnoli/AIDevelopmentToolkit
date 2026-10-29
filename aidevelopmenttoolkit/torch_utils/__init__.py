@@ -1,6 +1,6 @@
 """Torch utilities for model management, distributed training, and early stopping.
 
-The `aidevelopementtoolkit.torch_utils` package provides reusable PyTorch
+The `aidevelopmenttoolkit.torch_utils` package provides reusable PyTorch
 utilities for model creation, checkpoint management, ONNX support, early stopping,
 and distributed training.
 

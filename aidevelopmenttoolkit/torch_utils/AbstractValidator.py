@@ -4,7 +4,7 @@ from typing import Any, Union, Tuple, Dict
 import torch
 from torch import nn
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 logger = get_formatted_logger(__name__)
 

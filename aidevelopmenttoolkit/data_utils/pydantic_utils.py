@@ -3,7 +3,7 @@ from typing import Any, Iterable, Sequence
 import numpy as np
 from pydantic import BaseModel
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 logger = get_formatted_logger(name=__name__, level="ERROR")
 

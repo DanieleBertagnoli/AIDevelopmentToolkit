@@ -1,6 +1,6 @@
 """Logging utilities for file I/O, plotting, and MLflow integration.
 
-The `aidevelopementtoolkit.logging_utils` package provides helpers for logger
+The `aidevelopmenttoolkit.logging_utils` package provides helpers for logger
 configuration, file and artifact I/O, Plotly plotting, and MLflow
 environment management.
 

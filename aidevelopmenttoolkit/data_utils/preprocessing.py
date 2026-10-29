@@ -1,7 +1,7 @@
 from typing import Optional, Tuple, Union
 
 import numpy as np
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 logger = get_formatted_logger(name=__name__, level="ERROR")
 

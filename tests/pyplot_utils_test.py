@@ -5,8 +5,8 @@ import tempfile
 import numpy as np
 import plotly.graph_objects as go
 
-from aidevelopementtoolkit.logging_utils.plotly_utils import plot_heatmap, plot_scatter
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.plotly_utils import plot_heatmap, plot_scatter
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 if __name__ == "__main__":
 

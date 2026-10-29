@@ -5,11 +5,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 import mlflow
 
-from aidevelopementtoolkit.general_utils import check_shape
+from aidevelopmenttoolkit.general_utils import check_shape
 
 logger = get_formatted_logger(name=__name__, level="ERROR")
 

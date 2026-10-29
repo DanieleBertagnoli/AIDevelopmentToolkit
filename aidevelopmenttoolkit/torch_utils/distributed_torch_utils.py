@@ -2,7 +2,7 @@ from typing import List, Callable, Dict, Any
 from datetime import timedelta
 from os import environ
 
-from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
+from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 
 import torch
 import torch.distributed as dist

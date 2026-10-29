@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Tuple, Union, Dict
-from torch.optim.lr_scheduler import LRScheduler
+from typing import Any, Optional, Tuple, Union, Dict, Literal
 
 import torch
-from torch import log, nn
+from torch import nn
 from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import LRScheduler
 
 from aidevelopementtoolkit.logging_utils.logger import get_formatted_logger
 from aidevelopementtoolkit.torch_utils.EarlyStopper import EarlyStopper
@@ -24,9 +24,6 @@ class AbstractTrainingStep(ABC):
     optimizer : torch.optim.Optimizer
         The optimizer used to update the model's parameters during training.
 
-    lr_scheduler : Optional[LRScheduler]
-        The learning rate scheduler used to adjust the learning rate during training.
-
     loss_fn : nn.Module
         The loss function used in the training process.
 
@@ -37,13 +34,11 @@ class AbstractTrainingStep(ABC):
     def __init__(
             self,
             optimizer: torch.optim.Optimizer,
-            lr_scheduler: Optional[LRScheduler],
             loss_fn: nn.Module,
             device: Union[str, torch.device],
         ) -> None:
 
         self.optimizer = optimizer
-        self.lr_scheduler = lr_scheduler
         self.loss_fn = loss_fn
         self.device = torch.device(device) if isinstance(device, str) else device
 
@@ -102,6 +97,12 @@ class AbstractTrainer(ABC):
     training_step : AbstractTrainingStep
         The training step used to update the model's parameters on a single batch of data.
 
+    lr_scheduler : Optional[LRScheduler]
+        Learning rate scheduler for the optimizer.
+
+    lr_step_type : Literal["per-epoch", "per-batch", "metric-based"]
+        Specifies when the learning rate scheduler should step.
+
     device : str or torch.device
         The device (e.g., 'cpu' or 'cuda:0') on which the model and data will be loaded for training.
 
@@ -122,6 +123,8 @@ class AbstractTrainer(ABC):
     def __init__(
             self, 
             training_step: AbstractTrainingStep,
+            lr_scheduler: Optional[LRScheduler],
+            lr_step_type: Literal["per-epoch", "per-batch", "metric-based"],
             device: Union[str, torch.device],
             epochs: int,
             validator: AbstractValidator,
@@ -130,6 +133,8 @@ class AbstractTrainer(ABC):
         ) -> None:
 
         self.training_step = training_step
+        self.lr_scheduler = lr_scheduler
+        self.lr_step_type = lr_step_type
         self.device = torch.device(device) if isinstance(device, str) else device
         self.epochs = epochs
         self.early_stopper = early_stopper

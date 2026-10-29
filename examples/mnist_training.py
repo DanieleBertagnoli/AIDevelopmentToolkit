@@ -24,7 +24,7 @@ Run examples:
 """
 
 import os
-from typing import Tuple, Dict, Union, Optional
+from typing import Tuple, Dict, Union, Optional, Literal
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -34,6 +34,7 @@ import mlflow
 from tqdm import tqdm
 import torch
 from torch import nn
+from torch.optim.lr_scheduler import LRScheduler
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
@@ -49,7 +50,6 @@ from aidevelopementtoolkit.logging_utils.mlflow_utils import start_mlflow_run, l
 from aidevelopementtoolkit.torch_utils.EarlyStopper import EarlyStopper
 from aidevelopementtoolkit.torch_utils.AbstractTrainer import AbstractTrainer, AbstractTrainingStep
 from aidevelopementtoolkit.torch_utils.AbstractValidator import AbstractValidator, AbstractValidationStep
-from aidevelopementtoolkit.torch_utils.loss_weight_schedulers import AbstractScheduler
 from aidevelopementtoolkit.data_utils.metrics import compute_classification_metrics, compute_confusion_matrix
 from aidevelopementtoolkit.logging_utils.plotly_utils import plot_heatmap
 from aidevelopementtoolkit.torch_utils.distributed_torch_utils import dist_barrier, get_process_rank
@@ -372,23 +372,25 @@ class MNISTTrainer(AbstractTrainer):
     def __init__(
             self, 
             training_step: AbstractTrainingStep,
+            lr_scheduler: Optional[LRScheduler],
+            lr_step_type: Literal["per-epoch", "per-batch", "metric-based"],
             device: Union[str, torch.device],
             epochs: int,
             validator: AbstractValidator,
             early_stopper: Optional[EarlyStopper],
-            lr_scheduler: AbstractScheduler,
             checkpoint_interval: int,
         ) -> None:
 
         super().__init__(
             training_step=training_step,
+            lr_scheduler=lr_scheduler,
+            lr_step_type=lr_step_type,
             device=device,
             epochs=epochs,
             validator=validator,
             early_stopper=early_stopper,
             checkpoint_interval=checkpoint_interval,
         )
-        self.lr_scheduler = lr_scheduler
 
 
     def train(
@@ -423,10 +425,6 @@ class MNISTTrainer(AbstractTrainer):
 
         for e in range(1, self.epochs+1):
 
-            learning_rate = self.lr_scheduler.get_weight(e)
-            for parameter_group in self.training_step.optimizer.param_groups:
-                parameter_group["lr"] = learning_rate
-
             dist_barrier()
 
             model.train()
@@ -438,6 +436,9 @@ class MNISTTrainer(AbstractTrainer):
             for batch in tqdm(train_dataloader, desc=f"Training model: Epoch {e}/{self.epochs} ", unit="batch", leave=False, position=rank):
                 batch_loss = self.training_step(model, batch)
                 epoch_loss += batch_loss
+
+                if self.lr_scheduler and self.lr_step_type == "per-batch":
+                    self.lr_scheduler.step()
             
             epoch_loss = epoch_loss / len(train_dataloader)
 
@@ -450,7 +451,15 @@ class MNISTTrainer(AbstractTrainer):
 
             val_loss, val_metrics = self.validator.validate(model, val_dataloader, e)
 
+            if self.lr_scheduler:
 
+                if self.lr_step_type == "per-epoch":
+                    self.lr_scheduler.step()
+
+                elif self.lr_step_type == "metric-based":
+                    self.lr_scheduler.step(val_loss)
+
+    
             ### Checkpointing and Logging ###
 
             is_new_best, stop = self.early_stopper.set_epoch_metric(val_loss)
@@ -555,12 +564,16 @@ def main(log_level: str) -> None:
     ### Training Setup ###
 
     lr = 0.001
+    seed = 47
+    patience = 5
+    epochs = 100
 
     optimizer_kwargs = {"lr": lr}
     lr_scheduler_kwargs = {
         "T_max": epochs,
         "eta_min": 1e-5,
     }
+    lr_step_type = "per-epoch"
 
     optimizer = get_optimizer(
         class_name="AdamW",
@@ -575,10 +588,6 @@ def main(log_level: str) -> None:
     )
 
     loss_fn = CrossEntropyLoss()
-
-    seed = 47
-    patience=5
-    epochs=100
 
     set_seed(seed)
 
@@ -614,6 +623,7 @@ def main(log_level: str) -> None:
         validator=validator,
         early_stopper=early_stopper,
         lr_scheduler=lr_scheduler,
+        lr_step_type=lr_step_type,
         checkpoint_interval=10,
     )
 

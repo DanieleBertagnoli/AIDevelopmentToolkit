@@ -35,11 +35,6 @@ def get_optimizer(
     -------
     Optimizer
         An initialized instance of the specified PyTorch optimizer.
-
-    Raises
-    ------
-    ValueError
-        If `class_name` does not correspond to a valid PyTorch optimizer.
     """
     optimizer_class = getattr(torch.optim, class_name, None)
 

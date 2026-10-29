@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Tuple, Union, Dict
+from torch.optim.lr_scheduler import LRScheduler
 
 import torch
 from torch import log, nn
@@ -23,6 +24,9 @@ class AbstractTrainingStep(ABC):
     optimizer : torch.optim.Optimizer
         The optimizer used to update the model's parameters during training.
 
+    lr_scheduler : Optional[LRScheduler]
+        The learning rate scheduler used to adjust the learning rate during training.
+
     loss_fn : nn.Module
         The loss function used in the training process.
 
@@ -33,11 +37,13 @@ class AbstractTrainingStep(ABC):
     def __init__(
             self,
             optimizer: torch.optim.Optimizer,
+            lr_scheduler: Optional[LRScheduler],
             loss_fn: nn.Module,
             device: Union[str, torch.device],
         ) -> None:
 
         self.optimizer = optimizer
+        self.lr_scheduler = lr_scheduler
         self.loss_fn = loss_fn
         self.device = torch.device(device) if isinstance(device, str) else device
 

@@ -34,7 +34,6 @@ import mlflow
 from tqdm import tqdm
 import torch
 from torch import nn
-from torch.optim import AdamW
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
@@ -50,11 +49,11 @@ from aidevelopementtoolkit.logging_utils.mlflow_utils import start_mlflow_run, l
 from aidevelopementtoolkit.torch_utils.EarlyStopper import EarlyStopper
 from aidevelopementtoolkit.torch_utils.AbstractTrainer import AbstractTrainer, AbstractTrainingStep
 from aidevelopementtoolkit.torch_utils.AbstractValidator import AbstractValidator, AbstractValidationStep
-from aidevelopementtoolkit.torch_utils.schedulers import AbstractScheduler
+from aidevelopementtoolkit.torch_utils.loss_weight_schedulers import AbstractScheduler
 from aidevelopementtoolkit.data_utils.metrics import compute_classification_metrics, compute_confusion_matrix
 from aidevelopementtoolkit.logging_utils.plotly_utils import plot_heatmap
 from aidevelopementtoolkit.torch_utils.distributed_torch_utils import dist_barrier, get_process_rank
-
+from aidevelopementtoolkit.torch_utils.optimizer_utils import get_optimizer, get_lr_scheduler
 
 
  
@@ -556,22 +555,30 @@ def main(log_level: str) -> None:
     ### Training Setup ###
 
     lr = 0.001
-    min_lr = 1e-5
-    optimizer = AdamW(params=model.parameters(), lr=lr)
+
+    optimizer_kwargs = {"lr": lr}
+    lr_scheduler_kwargs = {
+        "T_max": epochs,
+        "eta_min": 1e-5,
+    }
+
+    optimizer = get_optimizer(
+        class_name="AdamW",
+        optimizer_kwargs=optimizer_kwargs,
+        parameters=model.parameters(),
+    )
+
+    lr_scheduler = get_lr_scheduler(
+        class_name="CosineAnnealingLR",
+        scheduler_kwargs=lr_scheduler_kwargs,
+        optimizer=optimizer,
+    )
+
     loss_fn = CrossEntropyLoss()
 
     seed = 47
     patience=5
     epochs=100
-    lr_scheduler = AbstractScheduler.get_scheduler(
-        "CosineScheduler",
-        {
-            "start_value": lr,
-            "end_value": min_lr,
-            "starting_epoch": 1,
-            "ending_epoch": epochs,
-        },
-    )
 
     set_seed(seed)
 
@@ -632,10 +639,12 @@ def main(log_level: str) -> None:
                     "epochs": epochs,
                     "patience": patience,
                     "seed": seed,
-                    "lr": lr,
-                    "min_lr": min_lr,
                     "Dataset": "MNIST",
                     "model": "ResNet50",
+                    "optimizer": "AdamW",
+                    "lr_scheduler": "CosineAnnealingLR",
+                    "lr_scheduler_kwargs": lr_scheduler_kwargs,
+                    "optimizer_kwargs": optimizer_kwargs,
                 }
             )
 

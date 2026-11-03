@@ -20,6 +20,12 @@ class EarlyStopper:
 
     Parameters
     ----------
+    delta_for_new_best : float
+        Required improvement, expressed as a difference in absolute mode or
+        a fraction of the magnitude of the best value in relative mode
+        (e.g., 0.1 means 10%). Improvement must strictly exceed this threshold.
+        In relative mode, any strict improvement from a zero best value counts.
+
     delta_type : Literal["absolute", "relative"]
         Defines whether the improvement threshold is interpreted as an
         absolute loss difference or a relative percentage.
@@ -94,6 +100,12 @@ class EarlyStopper:
         if start_epoch is not None and start_epoch < 1:
             logger.error(
                 f"The given `start_epoch`={start_epoch} must be >= 1.",
+                ValueError
+            )
+
+        if delta_type == "relative" and delta_for_new_best >= 1:
+            logger.error(
+                f"The given `delta_for_new_best`={delta_for_new_best} must be < 1 for relative delta type.",
                 ValueError
             )
 
@@ -202,9 +214,7 @@ class EarlyStopper:
                     is_new_best = improvement > self.delta_for_new_best
 
                 else:
-                    if self.best_loss != 0:
-                        rel_improvement = improvement / abs(self.best_loss) * 100
-                        is_new_best = rel_improvement > self.delta_for_new_best
+                    is_new_best = improvement > self.delta_for_new_best * abs(self.best_loss)
 
                 if is_new_best:
                     self.best_loss = epoch_metric

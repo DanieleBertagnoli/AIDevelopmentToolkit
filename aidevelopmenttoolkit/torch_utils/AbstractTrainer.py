@@ -9,6 +9,7 @@ from torch.optim.lr_scheduler import LRScheduler
 from aidevelopmenttoolkit.logging_utils.logger import get_formatted_logger
 from aidevelopmenttoolkit.torch_utils.EarlyStopper import EarlyStopper
 from aidevelopmenttoolkit.torch_utils.AbstractValidator import AbstractValidator
+from aidevelopmenttoolkit.torch_utils.optimizer_utils import SmartLRScheduler
 
 logger = get_formatted_logger(__name__)
 
@@ -97,8 +98,8 @@ class AbstractTrainer(ABC):
     training_step : AbstractTrainingStep
         The training step used to update the model's parameters on a single batch of data.
 
-    lr_scheduler : Optional[LRScheduler]
-        Learning rate scheduler for the optimizer.
+    lr_scheduler : Optional[Union[LRScheduler, SmartLRScheduler]]
+        Learning rate scheduler for the optimizer, optionally with delayed stepping.
 
     lr_step_type : Literal["per-epoch", "per-batch", "metric-based"]
         Specifies when the learning rate scheduler should step.
@@ -123,7 +124,7 @@ class AbstractTrainer(ABC):
     def __init__(
             self, 
             training_step: AbstractTrainingStep,
-            lr_scheduler: Optional[LRScheduler],
+            lr_scheduler: Optional[Union[LRScheduler, SmartLRScheduler]],
             lr_step_type: Literal["per-epoch", "per-batch", "metric-based"],
             device: Union[str, torch.device],
             epochs: int,

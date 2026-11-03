@@ -53,7 +53,7 @@ from aidevelopmenttoolkit.torch_utils.AbstractValidator import AbstractValidator
 from aidevelopmenttoolkit.data_utils.metrics import compute_classification_metrics, compute_confusion_matrix
 from aidevelopmenttoolkit.logging_utils.plotly_utils import plot_heatmap
 from aidevelopmenttoolkit.torch_utils.distributed_torch_utils import dist_barrier, get_process_rank
-from aidevelopmenttoolkit.torch_utils.optimizer_utils import get_optimizer, get_lr_scheduler
+from aidevelopmenttoolkit.torch_utils.optimizer_utils import get_optimizer, SmartLRScheduler
 
 
  
@@ -362,7 +362,7 @@ class MNISTTrainer(AbstractTrainer):
             The early stopper used to halt training if the model's performance stops improving.
             It can be set to `None` if early stopping is not desired.
 
-        lr_scheduler : AbstractScheduler
+        lr_scheduler : Optional[Union[LRScheduler, SmartLRScheduler]]
             The scheduler used to update the optimizer's learning rate each epoch.
             
         checkpoint_interval : int
@@ -372,7 +372,7 @@ class MNISTTrainer(AbstractTrainer):
     def __init__(
             self, 
             training_step: AbstractTrainingStep,
-            lr_scheduler: Optional[LRScheduler],
+            lr_scheduler: Optional[Union[LRScheduler, SmartLRScheduler]],
             lr_step_type: Literal["per-epoch", "per-batch", "metric-based"],
             device: Union[str, torch.device],
             epochs: int,
@@ -438,7 +438,10 @@ class MNISTTrainer(AbstractTrainer):
                 epoch_loss += batch_loss
 
                 if self.lr_scheduler and self.lr_step_type == "per-batch":
-                    self.lr_scheduler.step()
+                    if isinstance(self.lr_scheduler, SmartLRScheduler):
+                        self.lr_scheduler.step(current_epoch=e)
+                    else:
+                        self.lr_scheduler.step()
             
             epoch_loss = epoch_loss / len(train_dataloader)
 
@@ -454,15 +457,24 @@ class MNISTTrainer(AbstractTrainer):
             if self.lr_scheduler:
 
                 if self.lr_step_type == "per-epoch":
-                    self.lr_scheduler.step()
+                    if isinstance(self.lr_scheduler, SmartLRScheduler):
+                        self.lr_scheduler.step(current_epoch=e)
+                    else:
+                        self.lr_scheduler.step()
 
                 elif self.lr_step_type == "metric-based":
-                    self.lr_scheduler.step(val_loss)
+                    if isinstance(self.lr_scheduler, SmartLRScheduler):
+                        self.lr_scheduler.step(current_epoch=e, scheduler_args=[val_loss])
+                    else:
+                        self.lr_scheduler.step(val_loss)
 
     
             ### Checkpointing and Logging ###
 
-            is_new_best, stop = self.early_stopper.set_epoch_metric(val_loss)
+            is_new_best, stop = self.early_stopper.set_epoch_metric(
+                val_loss,
+                current_epoch=e,
+            )
 
             # Only the main process will execute
             if rank == 0:
@@ -574,6 +586,7 @@ def main(log_level: str) -> None:
         "eta_min": 1e-5,
     }
     lr_step_type = "per-epoch"
+    lr_scheduler_start_epoch = None
 
     optimizer = get_optimizer(
         class_name="AdamW",
@@ -581,10 +594,11 @@ def main(log_level: str) -> None:
         parameters=model.parameters(),
     )
 
-    lr_scheduler = get_lr_scheduler(
+    lr_scheduler = SmartLRScheduler(
         class_name="CosineAnnealingLR",
         scheduler_kwargs=lr_scheduler_kwargs,
         optimizer=optimizer,
+        start_epoch=lr_scheduler_start_epoch,
     )
 
     loss_fn = CrossEntropyLoss()
@@ -608,6 +622,7 @@ def main(log_level: str) -> None:
         delta_type="relative",
         criterion="min",
         patience=patience,
+        start_epoch=None,
     )
 
     training_step = MNISTTrainingStep(
@@ -654,6 +669,7 @@ def main(log_level: str) -> None:
                     "optimizer": "AdamW",
                     "lr_scheduler": "CosineAnnealingLR",
                     "lr_scheduler_kwargs": lr_scheduler_kwargs,
+                    "lr_scheduler_start_epoch": lr_scheduler_start_epoch,
                     "optimizer_kwargs": optimizer_kwargs,
                 }
             )

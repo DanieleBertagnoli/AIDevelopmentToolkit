@@ -1,4 +1,4 @@
-from typing import Literal, Tuple
+from typing import Literal, Optional, Tuple
 from numbers import Real
 
 import numpy as np
@@ -32,6 +32,10 @@ class EarlyStopper:
         Number of consecutive epochs without improvement before triggering
         early stopping.
 
+    start_epoch : Optional[int], default=None
+        One-based epoch at which monitoring begins. Metrics before this epoch
+        are ignored. If `None`, monitoring starts immediately.
+
     Examples
     --------
     Create an early stopper that stops after 3 epochs without improvement:
@@ -58,6 +62,7 @@ class EarlyStopper:
             delta_type: Literal["absolute", "relative"],
             criterion: Literal["min", "max"],
             patience: int,
+            start_epoch: Optional[int] = None,
         ):
 
         if delta_type not in ["absolute", "relative"]:
@@ -86,22 +91,36 @@ class EarlyStopper:
                 ValueError
             )
 
+        if start_epoch is not None and start_epoch < 1:
+            logger.error(
+                f"The given `start_epoch`={start_epoch} must be >= 1.",
+                ValueError
+            )
+
         self.delta_for_new_best = delta_for_new_best
         self.delta_type = delta_type
         self.criterion = criterion
         self.patience = patience
+        self.start_epoch = start_epoch
 
         self.best_loss = None
         self.epochs_without_improvement = 0
 
 
-    def set_epoch_metric(self, epoch_metric: float) -> Tuple[bool, bool]:
+    def set_epoch_metric(
+            self,
+            epoch_metric: float,
+            current_epoch: Optional[int] = None,
+        ) -> Tuple[bool, bool]:
         """Update epoch metric and check improvement and early stopping.
 
         Parameters
         ----------
         epoch_metric : float
             Value observed for the current epoch.
+
+        current_epoch : Optional[int], default=None
+            One-based current epoch. Required when `start_epoch` is set.
 
         Returns
         -------
@@ -142,6 +161,16 @@ class EarlyStopper:
         >>> stopper.set_epoch_metric(0.7)
         (True, False)
         """
+
+        if self.start_epoch is not None:
+            if current_epoch is None:
+                logger.error(
+                    "`current_epoch` must be provided when `start_epoch` is set.",
+                    ValueError
+                )
+
+            if current_epoch < self.start_epoch:
+                return False, False
 
         if not isinstance(epoch_metric, Real):
             logger.error(

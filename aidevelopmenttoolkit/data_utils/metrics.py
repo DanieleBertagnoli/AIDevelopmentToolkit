@@ -337,16 +337,18 @@ def cluster_distance_stats(
         embeddings: np.ndarray,
         cluster_ids: np.ndarray,
         metric: str = "euclidean",
-    ) -> Tuple[float, float]:
+    ) -> Tuple[float, float, float, float]:
     """Compute intra- and inter-cluster distance statistics.
 
     Notes
     -----
-    Intra-cluster distance is the mean pairwise distance between every pair of
-    points that belong to the **same** cluster, averaged across all clusters.
+    For each cluster `c`, compute intra-cluster `mu_c` and `sigma_c` from distances
+    between unique pairs of points within c (excluding self-distances).
+    Clusters with fewer than two points have no intra-cluster statistics.
 
-    Inter-cluster distance is the mean pairwise distance between every pair of
-    points that belong to **different** clusters.
+    Compute inter-cluster `mu_c` and `sigma_c` from all point-to-point distances
+    between points in c and points outside c. These statistics are undefined
+    when there is no other cluster.
 
     Any distance metric accepted by `scipy.spatial.distance.cdist` can be
     used (e.g. `"euclidean"`, `"cosine"`, `"cityblock"`).
@@ -367,12 +369,16 @@ def cluster_distance_stats(
 
     Returns
     -------
-    Tuple[float, float]
+    Tuple[float, float, float, float]
         Respectively:
             - Mean intra-cluster distance (`nan` when every cluster has
               fewer than two points).
             - Mean inter-cluster distance (`nan` when all points belong to
               the same cluster).
+            - Mean intra-cluster standard deviation (`nan` when every cluster
+              has fewer than two points).
+            - Mean inter-cluster standard deviation (`nan` when all points
+              belong to the same cluster).
 
     Examples
     --------
@@ -385,7 +391,7 @@ def cluster_distance_stats(
     ...     ]
     ... )
     >>> cluster_ids = np.array([0, 0, 1, 1])
-    >>> intra_d, inter_d = cluster_distance_stats(
+    >>> intra_mu, inter_mu, intra_sigma, inter_sigma = cluster_distance_stats(
     ...     embeddings=embeddings,
     ...     cluster_ids=cluster_ids,
     ...     metric="euclidean",
@@ -396,35 +402,50 @@ def cluster_distance_stats(
     cluster_ids = np.asarray(cluster_ids, dtype=np.int64)
 
     check_shape(embeddings, (-1, -1))
-    N, E = embeddings.shape
-    check_shape(cluster_ids, (N,))
+    num_points = embeddings.shape[0]
+    check_shape(cluster_ids, (num_points,))
 
-    unique_ids = np.unique(cluster_ids)
+    unique_cluster_ids = np.unique(cluster_ids)
 
-    # Intra cluster distances
-    intra_means = []
-    for cid in unique_ids:
-        mask = cluster_ids == cid
-        pts = embeddings[mask]
-        if pts.shape[0] < 2:
-            continue
-        dists = cdist(pts, pts, metric=metric)
-        # upper triangle only (exclude diagonal zeros)
-        upper = dists[np.triu_indices(pts.shape[0], 1)]
-        intra_means.append(upper.mean())
+    intra_cluster_mus: List[float] = []
+    intra_cluster_sigmas: List[float] = []
+    inter_cluster_mus: List[float] = []
+    inter_cluster_sigmas: List[float] = []
 
-    intra_d = float(np.mean(intra_means)) if intra_means else float(np.nan)
+    for cluster_id in unique_cluster_ids:
+        cluster_mask = cluster_ids == cluster_id
+        cluster_points = embeddings[cluster_mask]
 
-    cluster_distances = _cluster_pair_distance_matrix(embeddings, cluster_ids, metric)
+        if cluster_points.shape[0] >= 2:
 
-    if unique_ids.size < 2:
-        inter_distances = np.array([], dtype=np.float64)
-    else:
-        inter_distances = cluster_distances[np.triu_indices(unique_ids.size, 1)]
+            # Compute the intra-cluster distance matrix for the current cluster
+            intra_distance_matrix = cdist(cluster_points, cluster_points, metric=metric)
+            
+            # Keep each unordered pair once, excluding diagonal self-distances
+            intra_distances = intra_distance_matrix[np.triu_indices(cluster_points.shape[0], k=1)]
+            intra_mu_c = float(intra_distances.mean())
+            intra_sigma_c = float(intra_distances.std(ddof=0))
+            intra_cluster_mus.append(intra_mu_c)
+            intra_cluster_sigmas.append(intra_sigma_c)
 
-    inter_d = float(np.mean(inter_distances)) if inter_distances.size else float(np.nan)
 
-    return intra_d, inter_d
+        outside_cluster_points = embeddings[~cluster_mask]
+        if outside_cluster_points.shape[0] > 0:
+
+            # Compute the inter-cluster distance matrix between the current cluster and all outside points
+            inter_distances = cdist(cluster_points, outside_cluster_points, metric=metric)
+            inter_mu_c = float(inter_distances.mean())
+            inter_sigma_c = float(inter_distances.std(ddof=0))
+            inter_cluster_mus.append(inter_mu_c)
+            inter_cluster_sigmas.append(inter_sigma_c)
+
+    # Final aggregation
+    intra_mu = float(np.mean(intra_cluster_mus)) if intra_cluster_mus else float(np.nan)
+    inter_mu = float(np.mean(inter_cluster_mus)) if inter_cluster_mus else float(np.nan)
+    intra_sigma = float(np.mean(intra_cluster_sigmas)) if intra_cluster_sigmas else float(np.nan)
+    inter_sigma = float(np.mean(inter_cluster_sigmas)) if inter_cluster_sigmas else float(np.nan)
+
+    return intra_mu, inter_mu, intra_sigma, inter_sigma
 
 
 def compute_clustering_metrics(
@@ -435,56 +456,39 @@ def compute_clustering_metrics(
         distance_metrics: Optional[List[Literal["euclidean", "cosine", "manhattan"]]] = None,
         n_jobs: int = -1,
     ) -> Tuple[Dict[str, np.ndarray], Dict[str, float]]:
-    """Compute clustering metrics for one or more sequences.
+    """Compute per-sequence clustering metrics and their batch averages.
 
     Notes
     -----
-    The following metrics are computed for every sequence:
-    - Completeness
-    - Homogeneity
-    - V-Measure Score
-    - Fowlkes-Mallows Score
-    - Elements Like Me (ELM) Score
-    - For each metric `m` in `distance_metrics` (requires `embeddings`):
-      - GT Intra-cluster `m` distance
-    - GT Inter-cluster `m` distance
-      - Predicted Intra-cluster `m` distance
-      - Predicted Inter-cluster `m` distance
+    Computes Completeness, Homogeneity, V-Measure and Fowlkes-Mallows via
+    :mod:`sklearn.metrics`, and Elements Like Me (ELM) via :func:`_elm_score`.
+    Optional distance means and standard deviations for ground-truth and
+    predicted clusters follow :func:`cluster_distance_stats`.
 
-    The first four metrics are computed through `sklearn.metrics` (https://scikit-learn.org/stable/api/sklearn.metrics.html).
-    The ELM score is computed by following the paper: https://link.springer.com/article/10.1007/s10791-024-09436-7.
-    Intra/Inter-Cluster distances are computed via :func:`cluster_distance_stats`.
-
-    Degenerate clusterings (only one predicted or one ground-truth cluster) are excluded from the averaged 
-    Homogeneity, Completeness and V-Measure statistics for this evaluation protocol.
+    Sequences with fewer than two valid points produce only `nan` values.
+    Homogeneity, Completeness and V-Measure are also `nan` when either
+    clustering has only one cluster. Batch averages ignore `nan` values.
 
     Parameters
     ----------
     predictions : np.ndarray
-        Predicted cluster labels. Accepted shapes `(T,)` or `(B, T)`: 
-        - `B`: Batch dimension
-        - `T`: Sequence length
+        Predicted cluster IDs with shape `(T,)` or `(B, T)`, where `B` is
+        batch size and `T` is sequence length.
 
     labels : np.ndarray
         Ground-truth cluster labels. Same shape as `predictions`.
 
     padding_mask : Optional[np.ndarray], default=None
-        Boolean array where `True` indicates padding. Same shape as `predictions`.
-        When set to `None`, no padding is applied and all elements are considered valid.
+        Boolean array with the same shape as `predictions`; `True` excludes
+        a point from all metrics. `None` means no padding.
 
     embeddings : np.ndarray, default=None
-        Point embeddings used to compute distance-based statistics via
-        :func:`cluster_distance_stats`. Accepted shapes `(T, D)` or
-        `(B, T, D)` where `D` is the embedding dimensionality. When
-        `None` the distance metrics are omitted from the output.
+        Point embeddings with shape `(T, D)` or `(B, T, D)`, where `D` is
+        embedding dimensionality. Required for distance statistics.
 
     distance_metrics : Optional[List[Literal["euclidean", "cosine", "manhattan"]]], default=None
-        Distance metrics to be used for intra/inter cluster distance
-        computation. For each metric `m`, the keys
-        `"GT Intra-cluster m distance"`, `"GT Inter-cluster m distance"`,
-        `"Predicted Intra-cluster m distance"`, and
-        `"Predicted Inter-cluster m distance"` are added to the output.
-        If `None`, no distance metrics are computed. Requires `embeddings`.
+        Metrics forwarded to :func:`cluster_distance_stats`. Distance outputs
+        are omitted when this is empty/`None` or `embeddings` is `None`.
 
     n_jobs : int, default=-1
         Number of parallel workers for batch processing. `-1` uses all
@@ -493,12 +497,13 @@ def compute_clustering_metrics(
     Returns
     -------
     Tuple[Dict[str, np.ndarray], Dict[str, float]]
+        - `non_averaged` contains arrays of shape `(B,)`; 
+        - `averaged` contains their NaN-aware means, or `nan` if no sequence has a defined value.
 
-        - non_averaged:
-            Dictionary containing one metric per sequence.
-
-        - averaged:
-            Dictionary containing the average metric across sequences.
+    See Also
+    --------
+    :func:`cluster_distance_stats` : Per-cluster distance distributions and reduction.
+    :func:`_elm_score` : Elements Like Me score definition and paper reference.
 
     Examples
     --------
@@ -561,16 +566,21 @@ def compute_clustering_metrics(
         if use_distances:
             emb = embeddings[batch_idx][valid]
             for dist_metric in distance_metrics:
-                pred_intra_d, pred_inter_d = cluster_distance_stats(
+                pred_intra_mu, pred_inter_mu, pred_intra_sigma, pred_inter_sigma = cluster_distance_stats(
                     embeddings=emb, cluster_ids=pred, metric=dist_metric
                 )
-                gt_intra_d, gt_inter_d = cluster_distance_stats(
+                gt_intra_mu, gt_inter_mu, gt_intra_sigma, gt_inter_sigma = cluster_distance_stats(
                     embeddings=emb, cluster_ids=gt, metric=dist_metric
                 )
-                result[f"GT Intra-cluster {dist_metric} distance"] = gt_intra_d
-                result[f"Predicted Intra-cluster {dist_metric} distance"] = pred_intra_d
-                result[f"GT Inter-cluster {dist_metric} distance"] = gt_inter_d
-                result[f"Predicted Inter-cluster {dist_metric} distance"] = pred_inter_d
+                
+                result[f"GT Intra-cluster {dist_metric} distance"] = gt_intra_mu
+                result[f"Predicted Intra-cluster {dist_metric} distance"] = pred_intra_mu
+                result[f"GT Inter-cluster {dist_metric} distance"] = gt_inter_mu
+                result[f"Predicted Inter-cluster {dist_metric} distance"] = pred_inter_mu
+                result[f"GT Intra-cluster {dist_metric} distance std"] = gt_intra_sigma
+                result[f"Predicted Intra-cluster {dist_metric} distance std"] = pred_intra_sigma
+                result[f"GT Inter-cluster {dist_metric} distance std"] = gt_inter_sigma
+                result[f"Predicted Inter-cluster {dist_metric} distance std"] = pred_inter_sigma
 
         n_pred_clusters = np.unique(pred).size
         n_gt_clusters = np.unique(gt).size
@@ -606,6 +616,10 @@ def compute_clustering_metrics(
                 f"Predicted Intra-cluster {dist_metric} distance",
                 f"GT Inter-cluster {dist_metric} distance",
                 f"Predicted Inter-cluster {dist_metric} distance",
+                f"GT Intra-cluster {dist_metric} distance std",
+                f"Predicted Intra-cluster {dist_metric} distance std",
+                f"GT Inter-cluster {dist_metric} distance std",
+                f"Predicted Inter-cluster {dist_metric} distance std",
             ]
 
     non_averaged = {key: np.full(B, np.nan) for key in metric_keys}

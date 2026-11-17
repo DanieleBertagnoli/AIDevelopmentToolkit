@@ -593,7 +593,8 @@ def compute_clustering_metrics(
 
     distance_metrics : Optional[List[Literal["euclidean", "cosine", "manhattan"]]], default=None
         Metrics forwarded to :func:`cluster_distance_stats`. Distance outputs
-        are omitted when this is empty/`None` or `embeddings` is `None`.
+        are omitted when this is empty/`None`. If provided, `embeddings` is
+        required.
 
     n_jobs : int, default=-1
         Number of parallel workers for batch processing. `-1` uses all
@@ -640,6 +641,9 @@ def compute_clustering_metrics(
             padding_mask = padding_mask[None, :]
 
     B, T = predictions.shape
+
+    if distance_metrics and embeddings is None:
+        raise ValueError("embeddings are required when distance_metrics are provided")
 
     use_embeddings = embeddings is not None
     if use_embeddings:
@@ -697,27 +701,11 @@ def compute_clustering_metrics(
         )
     )
 
-    metric_keys = [
-        "Completeness",
-        "Homogeneity",
-        "V-Measure Score",
-        "Fowlkes-Mallows Score",
-        "ELM Score",
-    ]
-    if use_distances:
-        for dist_metric in distance_metrics:
-            metric_keys += [
-                f"GT Intra-cluster {dist_metric} distance",
-                f"Predicted Intra-cluster {dist_metric} distance",
-                f"GT Inter-cluster {dist_metric} distance",
-                f"Predicted Inter-cluster {dist_metric} distance",
-                f"GT Intra-cluster {dist_metric} distance std",
-                f"Predicted Intra-cluster {dist_metric} distance std",
-                f"GT Inter-cluster {dist_metric} distance std",
-                f"Predicted Inter-cluster {dist_metric} distance std",
-            ]
+    non_averaged: Dict[str, np.ndarray] = {}
+    for result in batch_results:
+        for key in result:
+            non_averaged.setdefault(key, np.full(B, np.nan))
 
-    non_averaged = {key: np.full(B, np.nan) for key in metric_keys}
     for batch_idx, result in enumerate(batch_results):
         for key, value in result.items():
             non_averaged[key][batch_idx] = value

@@ -550,7 +550,7 @@ def cluster_distance_stats(
         "Worst-Case Intra-to-Inter Cluster Distance Ratio": worst_cluster_intra_inter_ratio,
     }
 
-    return {f"{metric} {key}": value for key, value in stats.items()}
+    return {f"{metric.capitalize()} {key}": value for key, value in stats.items()}
 
 
 def compute_clustering_metrics(

@@ -337,7 +337,7 @@ def cluster_distance_stats(
         embeddings: np.ndarray,
         cluster_ids: np.ndarray,
         metric: str = "euclidean",
-    ) -> Tuple[float, float, float, float]:
+    ) -> Dict[str, float]:
     """Compute intra- and inter-cluster distance statistics.
 
     Notes
@@ -350,8 +350,12 @@ def cluster_distance_stats(
     between points in c and points outside c. These statistics are undefined
     when there is no other cluster.
 
+    Additional metrics describe the relationship between intra- and inter-cluster
+    distances, including compactness, separation, normalized separation, and
+    percentile-based worst-case behavior.
+
     Any distance metric accepted by `scipy.spatial.distance.cdist` can be
-    used (e.g. `"euclidean"`, `"cosine"`, `"cityblock"`).
+    used (e.g. "euclidean", "cosine", "cityblock").
 
     Parameters
     ----------
@@ -369,33 +373,26 @@ def cluster_distance_stats(
 
     Returns
     -------
-    Tuple[float, float, float, float]
-        Respectively:
-            - Mean intra-cluster distance (`nan` when every cluster has
-              fewer than two points).
-            - Mean inter-cluster distance (`nan` when all points belong to
-              the same cluster).
-            - Mean intra-cluster standard deviation (`nan` when every cluster
-              has fewer than two points).
-            - Mean inter-cluster standard deviation (`nan` when all points
-              belong to the same cluster).
+    Dict[str, float]
+        Dictionary containing:
+            - "Mean Intra-Cluster Metric Distance": Mean intra-cluster distance.
+            - "Mean Inter-Cluster Metric Distance": Mean inter-cluster distance.
+            - "Mean Intra-Cluster Metric Distance Std": Mean intra-cluster standard deviation.
+            - "Mean Inter-Cluster Metric Distance Std": Mean inter-cluster standard deviation.
+            - "Intra-to-Inter Cluster Distance Ratio": Ratio between intra- and inter-cluster means.
+            - "Cluster Separation Margin": Difference between inter- and intra-cluster means.
+            - "Normalized Cluster Separation": Normalized difference between inter- and intra-cluster means.
+            - "Intra-Cluster Distance Coefficient of Variation": Intra-cluster coefficient of variation.
+            - "Inter-Cluster Distance Coefficient of Variation": Inter-cluster coefficient of variation.
+            - "90th Percentile Intra-Cluster Distance": 90th percentile of all intra-cluster distances.
+            - "10th Percentile Inter-Cluster Distance": 10th percentile of all inter-cluster distances.
+            - "90th Percentile Intra-Cluster Mean Distance": 90th percentile of per-cluster intra means.
+            - "10th Percentile Inter-Cluster Mean Distance": 10th percentile of per-cluster inter means.
+            - "10th Percentile Cluster Separation Margin": 10th percentile of per-cluster separation margins.
+            - "Worst-Case Intra-to-Inter Cluster Distance Ratio": Ratio between the 90th percentile intra and 10th percentile inter cluster means.
 
-    Examples
-    --------
-    >>> embeddings = np.array(
-    ...     [
-    ...         [0.0, 0.0],
-    ...         [1.0, 0.0],
-    ...         [5.0, 0.0],
-    ...         [6.0, 0.0],
-    ...     ]
-    ... )
-    >>> cluster_ids = np.array([0, 0, 1, 1])
-    >>> intra_mu, inter_mu, intra_sigma, inter_sigma = cluster_distance_stats(
-    ...     embeddings=embeddings,
-    ...     cluster_ids=cluster_ids,
-    ...     metric="euclidean",
-    ... )
+        Undefined metrics are returned as nan.
+
     """
 
     embeddings = np.asarray(embeddings, dtype=np.float64)
@@ -412,22 +409,30 @@ def cluster_distance_stats(
     inter_cluster_mus: List[float] = []
     inter_cluster_sigmas: List[float] = []
 
+    intra_distances_all: List[np.ndarray] = []
+    inter_distances_all: List[np.ndarray] = []
+    cluster_separation_margins: List[float] = []
+
     for cluster_id in unique_cluster_ids:
         cluster_mask = cluster_ids == cluster_id
         cluster_points = embeddings[cluster_mask]
+
+        intra_mu_c = float(np.nan)
+        intra_sigma_c = float(np.nan)
 
         if cluster_points.shape[0] >= 2:
 
             # Compute the intra-cluster distance matrix for the current cluster
             intra_distance_matrix = cdist(cluster_points, cluster_points, metric=metric)
-            
+
             # Keep each unordered pair once, excluding diagonal self-distances
             intra_distances = intra_distance_matrix[np.triu_indices(cluster_points.shape[0], k=1)]
             intra_mu_c = float(intra_distances.mean())
             intra_sigma_c = float(intra_distances.std(ddof=0))
+
             intra_cluster_mus.append(intra_mu_c)
             intra_cluster_sigmas.append(intra_sigma_c)
-
+            intra_distances_all.append(intra_distances)
 
         outside_cluster_points = embeddings[~cluster_mask]
         if outside_cluster_points.shape[0] > 0:
@@ -436,8 +441,13 @@ def cluster_distance_stats(
             inter_distances = cdist(cluster_points, outside_cluster_points, metric=metric)
             inter_mu_c = float(inter_distances.mean())
             inter_sigma_c = float(inter_distances.std(ddof=0))
+
             inter_cluster_mus.append(inter_mu_c)
             inter_cluster_sigmas.append(inter_sigma_c)
+            inter_distances_all.append(inter_distances.ravel())
+
+            if np.isfinite(intra_mu_c):
+                cluster_separation_margins.append(inter_mu_c - intra_mu_c)
 
     # Final aggregation
     intra_mu = float(np.mean(intra_cluster_mus)) if intra_cluster_mus else float(np.nan)
@@ -445,7 +455,102 @@ def cluster_distance_stats(
     intra_sigma = float(np.mean(intra_cluster_sigmas)) if intra_cluster_sigmas else float(np.nan)
     inter_sigma = float(np.mean(inter_cluster_sigmas)) if inter_cluster_sigmas else float(np.nan)
 
-    return intra_mu, inter_mu, intra_sigma, inter_sigma
+    # Compute relative compactness and separation metrics
+    intra_inter_ratio = (
+        float(intra_mu / inter_mu)
+        if np.isfinite(intra_mu) and np.isfinite(inter_mu) and inter_mu > 0
+        else float(np.nan)
+    )
+
+    separation_margin = (
+        float(inter_mu - intra_mu)
+        if np.isfinite(intra_mu) and np.isfinite(inter_mu)
+        else float(np.nan)
+    )
+
+    normalized_separation = (
+        float((inter_mu - intra_mu) / (inter_mu + intra_mu))
+        if np.isfinite(intra_mu) and np.isfinite(inter_mu)
+        and (inter_mu + intra_mu) > 0
+        else float(np.nan)
+    )
+
+    # Compute coefficients of variation
+    intra_cv = (
+        float(intra_sigma / intra_mu)
+        if np.isfinite(intra_sigma) and np.isfinite(intra_mu) and intra_mu > 0
+        else float(np.nan)
+    )
+
+    inter_cv = (
+        float(inter_sigma / inter_mu)
+        if np.isfinite(inter_sigma) and np.isfinite(inter_mu) and inter_mu > 0
+        else float(np.nan)
+    )
+
+    # Compute percentile-based worst-case metrics
+    intra_distances_all = (
+        np.concatenate(intra_distances_all)
+        if intra_distances_all else np.array([])
+    )
+
+    inter_distances_all = (
+        np.concatenate(inter_distances_all)
+        if inter_distances_all else np.array([])
+    )
+
+    worst_intra_distance = (
+        float(np.percentile(intra_distances_all, 90))
+        if intra_distances_all.size > 0 else float(np.nan)
+    )
+
+    worst_inter_distance = (
+        float(np.percentile(inter_distances_all, 10))
+        if inter_distances_all.size > 0 else float(np.nan)
+    )
+
+    worst_intra_cluster_mean = (
+        float(np.percentile(intra_cluster_mus, 90))
+        if intra_cluster_mus else float(np.nan)
+    )
+
+    worst_inter_cluster_mean = (
+        float(np.percentile(inter_cluster_mus, 10))
+        if inter_cluster_mus else float(np.nan)
+    )
+
+    worst_cluster_separation_margin = (
+        float(np.percentile(cluster_separation_margins, 10))
+        if cluster_separation_margins else float(np.nan)
+    )
+
+    worst_cluster_intra_inter_ratio = (
+        float(worst_intra_cluster_mean / worst_inter_cluster_mean)
+        if np.isfinite(worst_intra_cluster_mean)
+        and np.isfinite(worst_inter_cluster_mean)
+        and worst_inter_cluster_mean > 0
+        else float(np.nan)
+    )
+
+    stats = {
+        "Mean Intra-Cluster Metric Distance": intra_mu,
+        "Mean Inter-Cluster Metric Distance": inter_mu,
+        "Mean Intra-Cluster Metric Distance Std": intra_sigma,
+        "Mean Inter-Cluster Metric Distance Std": inter_sigma,
+        "Intra-to-Inter Cluster Distance Ratio": intra_inter_ratio,
+        "Cluster Separation Margin": separation_margin,
+        "Normalized Cluster Separation": normalized_separation,
+        "Intra-Cluster Distance Coefficient of Variation": intra_cv,
+        "Inter-Cluster Distance Coefficient of Variation": inter_cv,
+        "90th Percentile Intra-Cluster Distance": worst_intra_distance,
+        "10th Percentile Inter-Cluster Distance": worst_inter_distance,
+        "90th Percentile Intra-Cluster Mean Distance": worst_intra_cluster_mean,
+        "10th Percentile Inter-Cluster Mean Distance": worst_inter_cluster_mean,
+        "10th Percentile Cluster Separation Margin": worst_cluster_separation_margin,
+        "Worst-Case Intra-to-Inter Cluster Distance Ratio": worst_cluster_intra_inter_ratio,
+    }
+
+    return {f"{metric} {key}": value for key, value in stats.items()}
 
 
 def compute_clustering_metrics(
@@ -566,22 +671,12 @@ def compute_clustering_metrics(
         if use_distances:
             emb = embeddings[batch_idx][valid]
             for dist_metric in distance_metrics:
-                pred_intra_mu, pred_inter_mu, pred_intra_sigma, pred_inter_sigma = cluster_distance_stats(
-                    embeddings=emb, cluster_ids=pred, metric=dist_metric
-                )
-                gt_intra_mu, gt_inter_mu, gt_intra_sigma, gt_inter_sigma = cluster_distance_stats(
-                    embeddings=emb, cluster_ids=gt, metric=dist_metric
-                )
-                
-                result[f"GT Intra-cluster {dist_metric} distance"] = gt_intra_mu
-                result[f"Predicted Intra-cluster {dist_metric} distance"] = pred_intra_mu
-                result[f"GT Inter-cluster {dist_metric} distance"] = gt_inter_mu
-                result[f"Predicted Inter-cluster {dist_metric} distance"] = pred_inter_mu
-                result[f"GT Intra-cluster {dist_metric} distance std"] = gt_intra_sigma
-                result[f"Predicted Intra-cluster {dist_metric} distance std"] = pred_intra_sigma
-                result[f"GT Inter-cluster {dist_metric} distance std"] = gt_inter_sigma
-                result[f"Predicted Inter-cluster {dist_metric} distance std"] = pred_inter_sigma
+                for cluster_type, cluster_ids in (("Predicted", pred), ("GT", gt)):
+                    stats = cluster_distance_stats(embeddings=emb, cluster_ids=cluster_ids, metric=dist_metric)
+                    for k, v in stats.items():
+                        result[f"{cluster_type} {k}"] = v
 
+                
         n_pred_clusters = np.unique(pred).size
         n_gt_clusters = np.unique(gt).size
 

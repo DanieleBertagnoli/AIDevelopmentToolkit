@@ -375,10 +375,10 @@ def cluster_distance_stats(
     -------
     Dict[str, float]
         Dictionary containing:
-            - "Mean Intra-Cluster Metric Distance": Mean intra-cluster distance.
-            - "Mean Inter-Cluster Metric Distance": Mean inter-cluster distance.
-            - "Mean Intra-Cluster Metric Distance Std": Mean intra-cluster standard deviation.
-            - "Mean Inter-Cluster Metric Distance Std": Mean inter-cluster standard deviation.
+            - "Mean Intra-Cluster Distance": Mean intra-cluster distance.
+            - "Mean Inter-Cluster Distance": Mean inter-cluster distance.
+            - "Mean Intra-Cluster Distance Std": Mean intra-cluster standard deviation.
+            - "Mean Inter-Cluster Distance Std": Mean inter-cluster standard deviation.
             - "Intra-to-Inter Cluster Distance Ratio": Ratio between intra- and inter-cluster means.
             - "Cluster Separation Margin": Difference between inter- and intra-cluster means.
             - "Normalized Cluster Separation": Normalized difference between inter- and intra-cluster means.
@@ -533,10 +533,10 @@ def cluster_distance_stats(
     )
 
     stats = {
-        "Mean Intra-Cluster Metric Distance": intra_mu,
-        "Mean Inter-Cluster Metric Distance": inter_mu,
-        "Mean Intra-Cluster Metric Distance Std": intra_sigma,
-        "Mean Inter-Cluster Metric Distance Std": inter_sigma,
+        "Mean Intra-Cluster Distance": intra_mu,
+        "Mean Inter-Cluster Distance": inter_mu,
+        "Mean Intra-Cluster Distance Std": intra_sigma,
+        "Mean Inter-Cluster Distance Std": inter_sigma,
         "Intra-to-Inter Cluster Distance Ratio": intra_inter_ratio,
         "Cluster Separation Margin": separation_margin,
         "Normalized Cluster Separation": normalized_separation,
